@@ -1,3 +1,4 @@
+using dotnet_learn.Data;
 using dotnet_learn.Models.Domain;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,33 +8,17 @@ namespace dotnet_learn.Controllers;
 [ApiController]
 public class RegionController: ControllerBase
 {
+    private readonly DotNetLearnDbContext _context;
+    public RegionController(DotNetLearnDbContext context)
+    {
+        _context = context;
+    }
+
+
     [HttpGet]
     public IActionResult GetAll()
     {
-        List<Region> regions = new List<Region>
-        {
-            new Region
-            {
-                Id = Guid.NewGuid(),
-                Code = "test1",
-                Name = "test1",
-                RegionImageUrl = "test1"
-            },
-            new Region
-            {
-                Id = Guid.NewGuid(),
-                Code = "test2",
-                Name = "test2",
-                RegionImageUrl = "test2"
-            },
-            new Region
-            {
-                Id = Guid.NewGuid(),
-                Code = "test3",
-                Name = "test3",
-                RegionImageUrl = "test3"
-            }
-        };
+        List<Region> regions = _context.Regions.ToList();
         return Ok(regions);
     }
 }
