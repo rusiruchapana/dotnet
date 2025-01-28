@@ -39,9 +39,27 @@ public class RegionController: ControllerBase
         return Ok(regionDtos);
     }
 
-    
-    
-    
+    //Get a region by Id.
+    [HttpGet("{regionId}")]
+    public IActionResult GetRegionsById([FromRoute(Name = "regionId")] Guid id)
+    {
+        Region region = _context.Regions.FirstOrDefault(r => r.Id == id);
+        if(region == null)
+            return NotFound();
+
+        RegionDTO regionDto = new RegionDTO
+        {
+            Id = region.Id,
+            Code = region.Code,
+            Name = region.Name,
+            RegionImageUrl = region.RegionImageUrl
+        };
+        
+        return Ok(regionDto);
+    }
+
+
+
     //Create region.
     [HttpPost]
     public IActionResult AddRegion(AddRegionRequestDTO addRegionRequestDto)
@@ -67,5 +85,29 @@ public class RegionController: ControllerBase
         
         return Ok(regionDto);
     }
+
+
+    //Update a Region.
+    [HttpPut("{regionId}")]
+    public IActionResult UpdateRegion(Guid id , AddRegionRequestDTO addRegionRequestDto)
+    {
+        Region region = _context.Regions.FirstOrDefault(r => r.Id == id);
+        region.Code = addRegionRequestDto.Code;
+        region.Name = addRegionRequestDto.Name;
+        region.RegionImageUrl = addRegionRequestDto.RegionImageUrl;
+
+        _context.Regions.Update(region);
+        _context.SaveChanges();
+
+        RegionDTO regionDto = new RegionDTO
+        {
+            Code = region.Code,
+            Name = region.Name,
+            RegionImageUrl = region.RegionImageUrl,
+        };
+        return Ok(regionDto);
+    }
+
+    
 
 }
