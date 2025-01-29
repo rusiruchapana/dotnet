@@ -109,5 +109,18 @@ public class RegionController: ControllerBase
     }
 
     
+    //Delete a region.
+    [HttpDelete("{regionId}")]
+    public IActionResult DeleteRegion([FromRoute(Name = "regionId")] Guid id)
+    {
+        Region region = _context.Regions.Find(id);
+        if(region == null)
+            return NotFound();
+
+        _context.Regions.Remove(region);
+        _context.SaveChanges();
+        return NoContent();
+    }
+    
 
 }
