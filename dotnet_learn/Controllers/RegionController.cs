@@ -2,6 +2,7 @@ using dotnet_learn.Data;
 using dotnet_learn.Models.Domain;
 using dotnet_learn.Models.DTO;
 using dotnet_learn.Models.DTO.Request;
+using dotnet_learn.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,10 +13,10 @@ namespace dotnet_learn.Controllers;
 public class RegionController: ControllerBase
 {
     //DI
-    private readonly DotNetLearnDbContext _context;
-    public RegionController(DotNetLearnDbContext context)
+    private readonly IRegionRepository _regionRepository;
+    public RegionController(IRegionRepository regionRepository)
     {
-        _context = context;
+        this._regionRepository = regionRepository;
     }
 
     
@@ -23,44 +24,41 @@ public class RegionController: ControllerBase
     [HttpGet]
     public async Task<IActionResult>  GetAll()
     {
-        List<Region> regions = await _context.Regions.ToListAsync();
-        List<RegionDTO> regionDtos = new List<RegionDTO>();
-        
+        var  regions = await _regionRepository.GetAll();
+        List<RegionDTO> dtos = new List<RegionDTO>();
         foreach (var region in regions)
         {
-            RegionDTO regionDto = new RegionDTO
+            var regionDTO = new RegionDTO
             {
                 Id = region.Id,
                 Code = region.Code,
                 Name = region.Name,
                 RegionImageUrl = region.RegionImageUrl,
             };
-            regionDtos.Add(regionDto);
+            dtos.Add(regionDTO);
         }
-        return Ok(regionDtos);
-    }
-
-    //Get a region by Id.
-    [HttpGet("{id}")]
-    public async Task<IActionResult>  GetRegionsById(Guid id)
-    {
-        Region region = await _context.Regions.FirstOrDefaultAsync(r => r.Id == id);
-        if(region == null)
-            return NotFound();
-
-        RegionDTO regionDto = new RegionDTO
-        {
-            Id = region.Id,
-            Code = region.Code,
-            Name = region.Name,
-            RegionImageUrl = region.RegionImageUrl
-        };
         
-        return Ok(regionDto);
+        return Ok(dtos);
     }
-
-
-
+    
+    
+     //Get a region by Id.
+     [HttpGet("{id}")]
+     public async Task<IActionResult>  GetRegionsById(Guid id)
+     {
+         var region = await _regionRepository.GetRegionsById(id);
+         var dto = new RegionDTO
+         {
+             Id = region.Id,
+             Code = region.Code,
+             Name = region.Name,
+             RegionImageUrl = region.RegionImageUrl,
+         };
+         return Ok(dto);
+     }
+    
+    
+    
     //Create region.
     [HttpPost]
     public async Task<IActionResult>  AddRegion(AddRegionRequestDTO addRegionRequestDto)
@@ -72,54 +70,54 @@ public class RegionController: ControllerBase
             Name = addRegionRequestDto.Name,
             RegionImageUrl = addRegionRequestDto.RegionImageUrl,
         };
-        
-        await _context.Regions.AddAsync(region);
-        await _context.SaveChangesAsync();
 
-        RegionDTO regionDto = new RegionDTO
+        await _regionRepository.AddRegion(region);
+
+        var dtos = new RegionDTO
         {
             Id = region.Id,
-            Code = region.Code,
+            Code = region.Code, 
             Name = region.Name,
             RegionImageUrl = region.RegionImageUrl,
         };
-        
-        return Ok(regionDto);
+        return Ok(dtos);
     }
-
-
+    
+    
+    
     //Update a Region.
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateRegion(Guid id , AddRegionRequestDTO addRegionRequestDto)
     {
-        Region region = await _context.Regions.FirstOrDefaultAsync(r => r.Id == id);
-        region.Code = addRegionRequestDto.Code;
-        region.Name = addRegionRequestDto.Name;
-        region.RegionImageUrl = addRegionRequestDto.RegionImageUrl;
-
-        _context.Regions.Update(region);
-        await _context.SaveChangesAsync();
-
-        RegionDTO regionDto = new RegionDTO
+        var region = new Region
         {
-            Code = region.Code,
-            Name = region.Name,
-            RegionImageUrl = region.RegionImageUrl,
+            Code = addRegionRequestDto.Code,
+            Name = addRegionRequestDto.Name,
+            RegionImageUrl = addRegionRequestDto.RegionImageUrl
         };
-        return Ok(regionDto);
-    }
 
+        var updatedRegion = await _regionRepository.UpdateRegion(id, region);
+
+        var updatedDto = new RegionDTO
+        {
+            Id = updatedRegion.Id,
+            Code = updatedRegion.Code,
+            Name = updatedRegion.Name,
+            RegionImageUrl = updatedRegion.RegionImageUrl,
+        };
+        return Ok(updatedRegion);
+    }
+    
+    
     
     //Delete a region.
     [HttpDelete("{id}")]
     public async Task<IActionResult>  DeleteRegion(Guid id)
     {
-        Region region = await _context.Regions.FindAsync(id);
-        if(region == null)
+        bool isDeleted = await _regionRepository.DeleteRegion(id);
+        if (isDeleted == false)
             return NotFound();
 
-        _context.Regions.Remove(region);
-        await _context.SaveChangesAsync();
         return NoContent();
     }
     
