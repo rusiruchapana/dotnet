@@ -3,6 +3,7 @@ using dotnet_learn.Models.Domain;
 using dotnet_learn.Models.DTO;
 using dotnet_learn.Models.DTO.Request;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_learn.Controllers;
 
@@ -20,9 +21,9 @@ public class RegionController: ControllerBase
     
     //Get all regions.
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult>  GetAll()
     {
-        List<Region> regions = _context.Regions.ToList();
+        List<Region> regions = await _context.Regions.ToListAsync();
         List<RegionDTO> regionDtos = new List<RegionDTO>();
         
         foreach (var region in regions)
@@ -41,9 +42,9 @@ public class RegionController: ControllerBase
 
     //Get a region by Id.
     [HttpGet("{id}")]
-    public IActionResult GetRegionsById(Guid id)
+    public async Task<IActionResult>  GetRegionsById(Guid id)
     {
-        Region region = _context.Regions.FirstOrDefault(r => r.Id == id);
+        Region region = await _context.Regions.FirstOrDefaultAsync(r => r.Id == id);
         if(region == null)
             return NotFound();
 
@@ -62,7 +63,7 @@ public class RegionController: ControllerBase
 
     //Create region.
     [HttpPost]
-    public IActionResult AddRegion(AddRegionRequestDTO addRegionRequestDto)
+    public async Task<IActionResult>  AddRegion(AddRegionRequestDTO addRegionRequestDto)
     {
         var region = new Region
         {
@@ -72,8 +73,8 @@ public class RegionController: ControllerBase
             RegionImageUrl = addRegionRequestDto.RegionImageUrl,
         };
         
-        _context.Regions.Add(region);
-        _context.SaveChanges();
+        await _context.Regions.AddAsync(region);
+        await _context.SaveChangesAsync();
 
         RegionDTO regionDto = new RegionDTO
         {
@@ -89,15 +90,15 @@ public class RegionController: ControllerBase
 
     //Update a Region.
     [HttpPut("{id}")]
-    public IActionResult UpdateRegion(Guid id , AddRegionRequestDTO addRegionRequestDto)
+    public async Task<IActionResult> UpdateRegion(Guid id , AddRegionRequestDTO addRegionRequestDto)
     {
-        Region region = _context.Regions.FirstOrDefault(r => r.Id == id);
+        Region region = await _context.Regions.FirstOrDefaultAsync(r => r.Id == id);
         region.Code = addRegionRequestDto.Code;
         region.Name = addRegionRequestDto.Name;
         region.RegionImageUrl = addRegionRequestDto.RegionImageUrl;
 
         _context.Regions.Update(region);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         RegionDTO regionDto = new RegionDTO
         {
@@ -111,14 +112,14 @@ public class RegionController: ControllerBase
     
     //Delete a region.
     [HttpDelete("{id}")]
-    public IActionResult DeleteRegion(Guid id)
+    public async Task<IActionResult>  DeleteRegion(Guid id)
     {
-        Region region = _context.Regions.Find(id);
+        Region region = await _context.Regions.FindAsync(id);
         if(region == null)
             return NotFound();
 
         _context.Regions.Remove(region);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return NoContent();
     }
     
