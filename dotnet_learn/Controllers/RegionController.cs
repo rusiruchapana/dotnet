@@ -40,8 +40,8 @@ public class RegionController: ControllerBase
     }
 
     //Get a region by Id.
-    [HttpGet("{regionId}")]
-    public IActionResult GetRegionsById([FromRoute(Name = "regionId")] Guid id)
+    [HttpGet("{id}")]
+    public IActionResult GetRegionsById(Guid id)
     {
         Region region = _context.Regions.FirstOrDefault(r => r.Id == id);
         if(region == null)
@@ -88,7 +88,7 @@ public class RegionController: ControllerBase
 
 
     //Update a Region.
-    [HttpPut("{regionId}")]
+    [HttpPut("{id}")]
     public IActionResult UpdateRegion(Guid id , AddRegionRequestDTO addRegionRequestDto)
     {
         Region region = _context.Regions.FirstOrDefault(r => r.Id == id);
@@ -110,8 +110,8 @@ public class RegionController: ControllerBase
 
     
     //Delete a region.
-    [HttpDelete("{regionId}")]
-    public IActionResult DeleteRegion([FromRoute(Name = "regionId")] Guid id)
+    [HttpDelete("{id}")]
+    public IActionResult DeleteRegion(Guid id)
     {
         Region region = _context.Regions.Find(id);
         if(region == null)
